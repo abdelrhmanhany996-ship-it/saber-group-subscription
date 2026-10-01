@@ -3,7 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { monthlySpendingHistory } from '../../data/mockData';
 import { 
   CreditCard, DollarSign, CalendarClock, Users, 
-  Plus, ArrowUpRight, Eye 
+  Plus, ArrowUpRight, Eye, Bell 
 } from 'lucide-react';
 import { 
   ResponsiveContainer, AreaChart, Area, BarChart, Bar, 
@@ -17,11 +17,14 @@ export const DashboardScreen: React.FC = () => {
     users, 
     teams, 
     activities, 
+    notifications,
     setIsAddWizardOpen, 
     setSelectedSubscriptionForDetails,
     setActiveTab, 
     t 
   } = useApp();
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   const [spendingFilter, setSpendingFilter] = useState<'Monthly' | 'Quarterly' | 'Yearly'>('Monthly');
   const [selectedKpiModal, setSelectedKpiModal] = useState<KpiModalType>(null);
@@ -93,13 +96,29 @@ export const DashboardScreen: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={() => setIsAddWizardOpen(true)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs lg:text-sm rounded-xl shadow-xs transition-all hover:shadow-md"
-        >
-          <Plus className="w-4 h-4" />
-          <span>{t('quickAdd')}</span>
-        </button>
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => setActiveTab('notifications')}
+            className="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 bg-white dark:bg-slate-900 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 text-slate-800 dark:text-slate-100 font-bold text-xs lg:text-sm rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-xs transition-all hover:scale-105 relative group cursor-pointer"
+            title="فتح مركز الإشعارات"
+          >
+            <Bell className="w-4 h-4 text-indigo-600 dark:text-indigo-400 group-hover:rotate-12 transition-transform" />
+            <span>الإشعارات</span>
+            <span className={`px-1.5 py-0.5 text-[10px] font-mono font-extrabold rounded-full text-white shadow-xs ${
+              unreadCount > 0 ? 'bg-rose-500 animate-pulse' : 'bg-slate-400 dark:bg-slate-600'
+            }`}>
+              {unreadCount}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setIsAddWizardOpen(true)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs lg:text-sm rounded-xl shadow-xs transition-all hover:shadow-md hover:scale-105"
+          >
+            <Plus className="w-4 h-4" />
+            <span>{t('quickAdd')}</span>
+          </button>
+        </div>
       </div>
 
       {/* TOP STATISTICS (4 KPI CARDS) */}
