@@ -10,6 +10,7 @@ export const SubscriptionDetailModal: React.FC = () => {
     selectedSubscriptionForDetails, 
     setSelectedSubscriptionForDetails,
     setSelectedSubscriptionForAssign,
+    updateSubscription,
     archiveSubscription,
     users,
     activities,
@@ -112,11 +113,18 @@ export const SubscriptionDetailModal: React.FC = () => {
                 </span>
               </div>
 
-              <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-800">
-                <span className="text-[11px] text-slate-500 dark:text-slate-400 block mb-0.5">تاريخ التجديد (End Date)</span>
-                <span className="text-sm font-mono font-bold text-indigo-600 dark:text-indigo-400">
-                  {sub.renewalDate}
-                </span>
+              <div className="p-3.5 bg-indigo-50/50 dark:bg-indigo-950/40 rounded-2xl border border-indigo-200/80 dark:border-indigo-800">
+                <span className="text-[11px] font-bold text-indigo-700 dark:text-indigo-300 block mb-1">تاريخ التجديد والانتهاء (End Date)</span>
+                <input
+                  type="date"
+                  value={sub.renewalDate}
+                  onChange={(e) => {
+                    const newDate = e.target.value;
+                    updateSubscription(sub.id, { renewalDate: newDate });
+                    setSelectedSubscriptionForDetails({ ...sub, renewalDate: newDate });
+                  }}
+                  className="w-full px-2 py-1 text-xs font-mono font-bold text-indigo-600 dark:text-indigo-300 bg-white dark:bg-slate-900 rounded-lg border border-indigo-300 dark:border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-xs cursor-pointer"
+                />
               </div>
 
               <div className="p-3.5 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-800">

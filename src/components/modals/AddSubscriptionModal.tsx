@@ -28,10 +28,16 @@ export const AddSubscriptionModal: React.FC = () => {
   const [chatInput, setChatInput] = useState('');
   const [customToolName, setCustomToolName] = useState('');
 
-  // Step 2: Plan System & Duration
+  // Step 2: Plan System & Duration / Expiry Date
   const [planType, setPlanType] = useState<'Individual' | 'Team' | 'Family' | 'Enterprise'>('Team');
   const [planName, setPlanName] = useState('Pro / Team');
-  const [durationMonths, setDurationMonths] = useState<number>(1); // 1, 3, 6, 12, 18
+  const [startDate, setStartDate] = useState<string>(() => new Date().toISOString().substring(0, 10));
+  const [renewalDate, setRenewalDate] = useState<string>(() => {
+    const next = new Date();
+    next.setMonth(next.getMonth() + 1);
+    return next.toISOString().substring(0, 10);
+  });
+  const [durationMonths, setDurationMonths] = useState<number>(1);
 
   // Step 3: Cost, Currency & Payment Link
   const [cost, setCost] = useState<number>(20);
@@ -117,16 +123,11 @@ export const AddSubscriptionModal: React.FC = () => {
         finalPaymentMethodStr = 'تحويل بنكي / مباشر';
       }
 
-      // Calculate renewal date based on duration months
-      const today = new Date();
-      const renewal = new Date(today.setMonth(today.getMonth() + durationMonths));
-      const renewalDateStr = renewal.toISOString().substring(0, 10);
-
       addSubscription({
         toolId: selectedTool?.id || 'tool-custom-' + Date.now(),
         toolName,
         provider,
-        planName: `${planName} (${durationMonths} شهر)`,
+        planName: `${planName}`,
         planType,
         cost: Number(cost),
         currency: currency === 'USD' ? '$' : currency === 'EGP' ? 'ج.م' : currency,
@@ -137,8 +138,8 @@ export const AddSubscriptionModal: React.FC = () => {
         teamId: selectedTeamId,
         teamName: teamObj?.name || 'Development',
         assignedUserIds: ['usr-ahmed'],
-        startDate: new Date().toISOString().substring(0, 10),
-        renewalDate: renewalDateStr,
+        startDate: startDate || new Date().toISOString().substring(0, 10),
+        renewalDate: renewalDate || new Date().toISOString().substring(0, 10),
         paymentMethod: finalPaymentMethodStr,
         paymentUrl,
         autoRenewal: true,
@@ -385,9 +386,42 @@ export const AddSubscriptionModal: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Duration Selection (المواصفة المحددة: شهر، 3 شهور، 6 شهور، 12 شهر، 18 شهر) */}
+                  {/* Start Date & Expiry Date Inputs */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">تاريخ بداية الاشتراك (Start Date)</label>
+                      <div className="relative">
+                        <Calendar className="w-4 h-4 text-slate-400 absolute start-3 top-3 pointer-events-none" />
+                        <input
+                          type="date"
+                          value={startDate}
+                          onChange={(e) => {
+                            setStartDate(e.target.value);
+                          }}
+                          className="w-full ps-9 pe-3 py-2.5 text-xs border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:border-indigo-600 font-bold font-mono"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                        تاريخ انتهاء الاشتراك / التجديد (Expiry Date) *
+                      </label>
+                      <div className="relative">
+                        <Calendar className="w-4 h-4 text-indigo-500 absolute start-3 top-3 pointer-events-none" />
+                        <input
+                          type="date"
+                          value={renewalDate}
+                          onChange={(e) => setRenewalDate(e.target.value)}
+                          className="w-full ps-9 pe-3 py-2.5 text-xs border-2 border-indigo-500/80 bg-indigo-50/30 dark:bg-indigo-950/30 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:border-indigo-600 font-bold font-mono shadow-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Duration Fast Selection (اختيار سريع للمدة بالأشهر) */}
                   <div className="space-y-2">
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">مدة الاشتراك المطلوبة *</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">اختيار سريع للمدة (يحسب التاريخ تلقائياً) *</label>
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
                       {[
                         { months: 1, label: 'شهر واحد' },
@@ -399,8 +433,13 @@ export const AddSubscriptionModal: React.FC = () => {
                         <button
                           key={d.months}
                           type="button"
-                          onClick={() => setDurationMonths(d.months)}
-                          className={`p-3 rounded-2xl border text-center transition-all ${
+                          onClick={() => {
+                            setDurationMonths(d.months);
+                            const base = new Date(startDate || Date.now());
+                            base.setMonth(base.getMonth() + d.months);
+                            setRenewalDate(base.toISOString().substring(0, 10));
+                          }}
+                          className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
                             durationMonths === d.months
                               ? 'border-indigo-600 bg-indigo-600 text-white font-extrabold shadow-md'
                               : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 font-bold hover:border-slate-300'
